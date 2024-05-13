@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="refresh" content="3">
+        <title>Air Purifier</title>
+    </head>
+    <body>
+        <div>
+            <button id="ON">ON</button>
+            <button id="OFF">OFF</button>
+            <br>
+            <br>
+            <div class="container">
+                <br>
+                <label id="label">Air Quality Index:</label>
+                <label id="indeks"></label>
+                <br>
+                <br>
+                <label id="label2">Kvalitet u postotcima:</label>
+                <label id="postotak"></label>
+                <br>
+                <br>
+                <label id="label">Trenutna kvaliteta zraka:</label>
+                <label id="kvaliteta"></label>
+            </div>
+        
+                <div class="buttons">
+                <br>
+                <br>
+                <label id="label">Manuelno čišćenje zraka:</label>
+                <br>
+                <button id="upali">ON</button>  
+                <button id="ugasi">OFF</button>
+                <br>
+            </div>
+          </div>
+
+          <script type="module">
+            // Import the functions you need from the SDKs you need
+            import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
+            // TODO: Add SDKs for Firebase products that you want to use
+            // https://firebase.google.com/docs/web/setup#available-libraries
+
+            // Your web app's Firebase configuration
+            const firebaseConfig = {
+                apiKey: "AIzaSyA9kP9RDEGUXywpLa2ysU-maFec0w5G5yg",
+                authDomain: "iot-air-purifier.firebaseapp.com",
+                databaseURL: "https://iot-air-purifier-default-rtdb.europe-west1.firebasedatabase.app",
+                projectId: "iot-air-purifier",
+                storageBucket: "iot-air-purifier.appspot.com",
+                messagingSenderId: "333492776278",
+                appId: "1:333492776278:web:cc49da9c6f799031447af7"
+            };
+
+            // Initialize Firebase
+            const app = initializeApp(firebaseConfig);
+
+            import {getDatabase, ref, set, get, child, update, remove} 
+            from "https://www.gstatic.com/firebasejs/9.17.1/firebase-database.js";
+
+            const db=getDatabase();
+
+            const dugme1 = document.getElementById("ON");
+            const dugme2 = document.getElementById("OFF");
+            const text1 = document.getElementById("indeks")
+            const text2 = document.getElementById("postotak");
+            const text3 = document.getElementById("kvaliteta");
+            const dugme3 = document.getElementById("upali");
+            const dugme4 = document.getElementById("ugasi");
+
+            function AutomatskiON(){
+                update(ref(db, "airpurifier/"), {
+                    automatski: true,
+                })
+                .then(()=>{
+                    alert("Pročišćivač zraka uključen");
+                })
+                .catch((error) =>{
+                    alert("Greska: " + error);
+                });
+                Dugmici();
+            }
+            dugme1.addEventListener("click", AutomatskiON);
+
+            function AutomatskiOFF() {
+                update(ref(db, "airpurifier/"), {
+                    automatski: false,
+                })
+                .then(() => {
+                    alert("Pročišćivač zraka isključen");
+                })
+                .catch((error) => {
+                    alert("Greska: " + error);
+                });
+                Dugmici();
+            }
+            dugme2.addEventListener("click", AutomatskiOFF);
+
+
+            function Load1() {
+                const dbRef = ref(getDatabase());
+                get(child(dbRef, "airpurifier/"))
+                    .then((snapshot) => {
+                        if (snapshot.exists()) {
+                            text1.innerHTML = snapshot.val().indeks;
+                        } else {
+                            console.log("No data available");
+                        }
+                    })
+                .catch((error) => {
+                    console.error(error);
+                });
+            } 
+
+            function Load2() {
+                const dbRef = ref(getDatabase());
+                get(child(dbRef, "airpurifier/"))
+                    .then((snapshot) => {
+                        if (snapshot.exists()) {
+                            text2.innerHTML = snapshot.val().postotak + "%";
+                        } else {
+                            console.log("No data available");
+                        }
+                    })
+                .catch((error) => {
+                    console.error(error);
+                });
+            }
+
+            function Load3() {
+                const dbRef = ref(getDatabase());
+                get(child(dbRef, "airpurifier/"))
+                    .then((snapshot) => {
+                        if (snapshot.exists()) {
+                            text3.innerHTML = snapshot.val().kvaliteta;
+                        } else {
+                            console.log("No data available");
+                        }
+                    })
+                .catch((error) => {
+                    console.error(error);
+                });
+            }
+    
+            function ManuelnoON(){
+                update(ref(db, "airpurifier/"), {
+                    manuelno: true,
+                })
+                .then(()=>{
+                    alert("Manuelno pročišćavanje uključeno");
+                })
+                .catch((error) =>{
+                    alert("Greska: " + error);
+                });
+                Dugmici();
+            }
+            dugme3.addEventListener("click", ManuelnoON);
+
+            function ManuelnoOFF() {
+                update(ref(db, "airpurifier/"), {
+                    manuelno: false,
+                
+                })
+                .then(() => {
+                    alert("Manuelno pročišćavanje isključeno");
+                })
+                .catch((error) => {
+                    alert("Greska: " + error);
+                });
+                Dugmici();
+            }
+            dugme4.addEventListener("click", ManuelnoOFF);
+
+            function Dugmici() {
+                const dbRef = ref(getDatabase());
+            get(child(dbRef, "airpurifier/"))
+            .then((snapshot) => {
+            if (snapshot.exists()) {
+            if (snapshot.val().automatski == true) {
+                document.getElementById("upali").disabled = true;
+                document.getElementById("ugasi").disabled = true;
+            }
+            else {
+                document.getElementById("upali").disabled = false;
+                document.getElementById("ugasi").disabled = false;
+            }
+            if(snapshot.val().manuelno == true){
+                document.getElementById("ON").disabled = true;
+                document.getElementById("OFF").disabled = true;
+            }
+            else {
+                document.getElementById("ON").disabled = false;
+                document.getElementById("OFF").disabled = false;
+            }
+            }
+             else {
+            console.log("No data available");
+            }
+            })
+            .catch((error) => {
+            console.error(error);
+            });
+            }
+
+
+            Load1();
+            Load2();
+            Load3();
+            Dugmici();
+        </script>
+    </body>
+</html>
